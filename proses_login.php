@@ -6,23 +6,22 @@ $email = $_POST['email'];
 $nik = $_POST['nik'];
 $password = $_POST['password'];
 
-// ambil data user
-$stmt = $conn->prepare("SELECT * FROM user WHERE email = ? AND nik = ?");
-$stmt->bind_param("ss", $email, $nik);
-$stmt->execute();
-$result = $stmt->get_result();
-$data = $result->fetch_assoc();
+$query = mysqli_query($conn, "SELECT * FROM user WHERE email='$email' AND nik='$nik'");
+$data = mysqli_fetch_assoc($query);
 
 if ($data) {
 
-    // cek password hash
     if (password_verify($password, $data['password'])) {
 
         $_SESSION['login'] = true;
+        $_SESSION['role'] = $data['role'];
         $_SESSION['email'] = $data['email'];
-        $_SESSION['nama'] = $data['nama'];
 
-        header("Location: dashboard.php");
+        if ($data['role'] == 'admin') {
+            header("Location: admin_dashboard.php");
+        } else {
+            header("Location: dashboard.php");
+        }
         exit;
 
     } else {
@@ -30,6 +29,6 @@ if ($data) {
     }
 
 } else {
-    echo "<script>alert('Email atau NIK tidak ditemukan'); window.location='login.php';</script>";
+    echo "<script>alert('User tidak ditemukan'); window.location='login.php';</script>";
 }
 ?>
